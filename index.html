@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LLM-PD · Ruilin Gao</title>
+<meta name="description" content="CMU student lecture slides: Toward Intelligent and Secure Cloud — LLM Empowered Proactive Defense (arXiv:2412.21051).">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+* { margin: 0 }
+html, body { height: 100%; background: #111113; overflow: hidden; }
+#stage { position: fixed; inset: 0; overflow: hidden; }
+#deck { width: 1920px; height: 1080px; position: absolute; left: 50%; top: 50%; transform-origin: center center; }
+#deck > section { position: absolute; inset: 0; width: 1920px; height: 1080px; box-sizing: border-box; overflow: hidden; display: none !important; }
+#deck > section.on { display: flex !important; }
+h1 { font-size: 96px; font-weight: 600 } h2 { font-size: 64px; font-weight: 600 } h3 { font-size: 44px; font-weight: 600 }
+table { width: 100%; border-collapse: collapse }
+th, td { padding: .35em .6em; text-align: left; border-bottom: 2px solid #0002 }
+th { border-bottom: 3px solid #1F1F22 }
+x-shape { display: block }
+:root {
+  --red: #C41230;
+  --ink: #1F1F22;
+  --paper: #FAF8F5;
+  --stone: #F0EDE8;
+  --card: #FFFDFB;
+  --gray: #55565A;
+  --line: #D9D4CC;
+  --gold: #FDB515;
+  --rose: #FBE9EC;
+  --soft: #B9B6B0;
+}
+
+body { font-family: 'Open Sans', Arial, sans-serif; color: #1F1F22; }
+
+section {
+  counter-increment: page;
+  background: #FAF8F5;
+  padding: 128px 128px 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+section.stone { background: #F0EDE8; }
+section.dark { background: #1F1F22; color: #FAF8F5; }
+section.red { background: #C41230; color: #FAF8F5; }
+
+/* CMU-style red bar + footer */
+.topbar { position: absolute; left: 0; top: 0; width: 1920px; height: 16px; background: #C41230; }
+.foot { position: absolute; left: 128px; bottom: 64px; width: 1664px; display: flex; justify-content: space-between; align-items: center; }
+.foot-l { font-size: 24px; color: #55565A; }
+.foot::after { content: counter(page); font-size: 24px; font-weight: 700; color: #C41230; }
+.dark .foot-l { color: #B9B6B0; }
+.dark .foot::after { color: #FDB515; }
+
+/* Headings */
+.head { display: flex; flex-direction: column; gap: 12px; }
+.eyebrow { font-size: 24px; font-weight: 700; letter-spacing: 3px; color: #C41230; }
+.dark .eyebrow { color: #FDB515; }
+h2 { font-family: 'Source Serif 4', Georgia, serif; font-size: 64px; font-weight: 600; line-height: 1.1; color: #1F1F22; }
+h3 { font-family: 'Open Sans', Arial, sans-serif; font-size: 36px; font-weight: 700; line-height: 1.2; color: #1F1F22; }
+
+/* Text */
+.body { font-size: 28px; line-height: 1.45; color: #55565A; }
+.small { font-size: 24px; line-height: 1.4; color: #55565A; }
+.note { font-size: 24px; line-height: 1.4; color: #55565A; font-style: italic; }
+.list { font-size: 28px; line-height: 1.5; color: #55565A; padding-left: 36px; }
+.label { font-size: 24px; font-weight: 700; letter-spacing: 2px; color: #C41230; }
+
+/* Cards */
+.cards { display: flex; gap: 32px; }
+.card { flex: 1; background: #F0EDE8; border-top: 6px solid #C41230; padding: 36px 36px 40px; display: flex; flex-direction: column; gap: 16px; }
+.stone .card { background: #FFFDFB; }
+.card.gray { border-top: 6px solid #55565A; }
+.ico { width: 56px; height: 56px; color: #C41230; }
+.ico-gray { width: 56px; height: 56px; color: #55565A; }
+
+/* Cover */
+.cover { padding: 112px 128px; justify-content: space-between; gap: 0; }
+.cover-org { font-size: 24px; font-weight: 700; letter-spacing: 4px; color: #FAF8F5; }
+.cover-main { display: flex; flex-direction: column; gap: 24px; }
+.cover-session { font-size: 28px; color: #FBE9EC; }
+.cover-title { font-family: 'Source Serif 4', Georgia, serif; font-size: 96px; font-weight: 600; line-height: 1.05; color: #FAF8F5; }
+.cover-sub { font-size: 40px; font-weight: 600; line-height: 1.25; color: #FAF8F5; }
+.cover-paper { font-size: 28px; color: #FBE9EC; }
+.cover-who { display: flex; flex-direction: column; gap: 8px; border-top: 2px solid #E8A0AC; padding-top: 32px; }
+.cover-name { font-size: 44px; font-weight: 700; color: #FAF8F5; }
+.cover-meta { font-size: 28px; color: #FBE9EC; }
+
+/* Statement slide */
+.statement { justify-content: center; gap: 48px; }
+.big-quote { font-family: 'Source Serif 4', Georgia, serif; font-size: 72px; font-weight: 600; line-height: 1.2; color: #FAF8F5; }
+.tags { display: flex; gap: 24px; }
+.tag { font-size: 28px; font-weight: 600; color: #1F1F22; background: #FDB515; padding: 12px 28px; border-radius: 40px; }
+
+/* Architecture diagram */
+.diagram { position: relative; width: 1664px; height: 520px; }
+.node { position: absolute; top: 40px; width: 296px; height: 248px; box-sizing: border-box; background: #F0EDE8; border-top: 6px solid #C41230; padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+.node-id { font-size: 24px; font-weight: 700; color: #C41230; }
+.node-name { font-size: 28px; font-weight: 700; line-height: 1.2; color: #1F1F22; }
+.node-role { font-size: 24px; line-height: 1.35; color: #55565A; }
+x-connector { color: #C41230; border-width: 3px; }
+.loop-label { position: absolute; left: 432px; top: 404px; width: 800px; font-size: 26px; font-weight: 600; text-align: center; color: #C41230; }
+.env-label { position: absolute; left: 0; top: 472px; width: 1664px; font-size: 24px; text-align: center; color: #55565A; }
+
+/* Formula pills */
+.formula { display: flex; gap: 12px; align-items: center; }
+.pill { font-size: 24px; font-weight: 600; color: #1F1F22; background: #FBE9EC; padding: 8px 18px; border-radius: 24px; }
+.op { font-size: 28px; font-weight: 700; color: #C41230; }
+
+/* Code */
+.code { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 24px; line-height: 1.5; background: #1F1F22; color: #F3EFE8; padding: 24px 28px; border-radius: 8px; white-space: nowrap; }
+.mini { font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 24px; line-height: 1.5; background: #FFFDFB; color: #1F1F22; padding: 20px 24px; border-left: 4px solid #C41230; }
+
+/* Results: bars */
+.bars { display: flex; gap: 32px; }
+.bar-card { flex: 1; background: #F0EDE8; padding: 36px; display: flex; flex-direction: column; gap: 20px; }
+.bar-attack { font-size: 32px; font-weight: 700; color: #1F1F22; }
+.bar-row { display: flex; flex-direction: column; gap: 8px; }
+.bar-name { font-size: 24px; color: #55565A; }
+.track { width: 100%; height: 28px; background: #E2DDD5; }
+.fill-red { height: 28px; background: #C41230; transform-origin: left center; animation: grow 800ms cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 150ms + 200ms); }
+.fill-gray { height: 28px; background: #6D6E71; transform-origin: left center; animation: grow 800ms cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 150ms + 300ms); }
+.big-num { font-family: 'Source Serif 4', Georgia, serif; font-size: 72px; font-weight: 700; line-height: 1; color: #C41230; }
+.big-gray { font-family: 'Source Serif 4', Georgia, serif; font-size: 44px; font-weight: 600; line-height: 1; color: #55565A; }
+.gap-pill { font-size: 24px; font-weight: 700; color: #FAF8F5; background: #C41230; padding: 6px 16px; border-radius: 20px; align-self: flex-start; }
+
+/* Tables */
+.tbl { font-size: 26px; color: #1F1F22; width: 100%; }
+.tbl-sm { font-size: 24px; color: #1F1F22; width: 100%; }
+.hl { background: #FBE9EC; }
+
+/* Layout helpers */
+.cols { display: flex; gap: 48px; }
+.col { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.box { background: #F0EDE8; padding: 28px 32px; display: flex; flex-direction: column; gap: 10px; }
+.callout { font-size: 26px; font-weight: 600; color: #C41230; }
+.row { display: flex; gap: 20px; align-items: center; }
+.num { font-family: 'Source Serif 4', Georgia, serif; font-size: 64px; font-weight: 700; line-height: 1; color: #C41230; width: 64px; }
+.take { display: flex; gap: 28px; align-items: flex-start; }
+.take-text { font-size: 32px; line-height: 1.4; color: #1F1F22; }
+.thanks { font-family: 'Source Serif 4', Georgia, serif; font-size: 56px; font-weight: 600; color: #C41230; }
+
+/* Motion: arrive gently, staged */
+.rise { animation: rise 600ms cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 120ms); }
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } }
+@keyframes grow { from { transform: scaleX(0); } }
+
+body { counter-reset: page var(--start, 0); }
+#bar { position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 8px; align-items: center; justify-content: center; padding: 10px; font: 14px -apple-system, Helvetica, Arial, sans-serif; color: #ddd; opacity: 0; transition: opacity .3s; }
+#bar:hover, body.touch #bar { opacity: 1; }
+#bar button, #bar a { background: #2a2a2e; color: #eee; border: 0; border-radius: 6px; padding: 8px 14px; font: inherit; cursor: pointer; text-decoration: none; }
+#bar button:hover, #bar a:hover { background: #C41230; }
+#count { min-width: 70px; text-align: center; }
+#hint { position: fixed; top: 12px; right: 16px; font: 13px -apple-system, Helvetica, Arial, sans-serif; color: #888; transition: opacity 1s; }
+</style></head>
+<body>
+<div id="stage"><div id="deck">
+<section id="cover" class="red cover">
+<p class="cover-org">CARNEGIE MELLON UNIVERSITY · STUDENT LECTURE</p>
+<div class="cover-main">
+<p class="cover-session">Security Operations, Incident Response, and Autonomous Defense</p>
+<h1 class="cover-title">Toward Intelligent and Secure Cloud</h1>
+<p class="cover-sub">Large Language Model Empowered Proactive Defense (LLM-PD)</p>
+<p class="cover-paper">Zhou, Cheng, Du, Chen &amp; Zhao · Southeast University · arXiv:2412.21051</p>
+</div>
+<div class="cover-who">
+<p class="cover-name">Ruilin Gao</p>
+<p class="cover-meta">ruiling@andrew.cmu.edu · Pittsburgh · November 18, 2026</p>
+</div>
+
+</section>
+<section id="problem">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">THE PROBLEM</p>
+<h2>Cloud systems are big, complex, and easy to attack</h2>
+</div>
+<div class="cards">
+<div class="card rise" style="--i:1">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C41230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.5 3.5 0 0 0 7 18z"/></svg>
+<h3>A huge attack surface</h3>
+<p class="body">Networks, APIs, virtual machines and hardware all mix together. Standard protocols and virtualization open many doors.</p>
+</div>
+<div class="card rise" style="--i:2">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C41230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+<h3>DoS is a top threat</h3>
+<p class="body">SYN floods, slow HTTP requests, memory contention: they all try to knock a service offline.</p>
+</div>
+<div class="card rise" style="--i:3">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C41230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+<h3>Reacting is too late</h3>
+<p class="body">Classic tools wait for the attack, then respond. By then, users already feel the damage.</p>
+</div>
+</div>
+<p class="callout rise" style="--i:4">Goal: act before or during an attack, not after. That is “proactive defense.”</p>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="gap">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">PRIOR WORK</p>
+<h2>Proactive defense exists, but it doesn’t adapt well</h2>
+</div>
+<table class="tbl rise" style="--i:1">
+<tr><th style="width:30%">Approach</th><th style="width:30%">What it does</th><th style="width:40%">Main limit</th></tr>
+<tr><td>Moving Target Defense, deception, mimic defense</td><td>Change the attack surface ahead of time</td><td>Each mechanism is hand-built for one setting</td></tr>
+<tr><td>Cloud SIEM (Tuyishime et al.)</td><td>Watches and raises alerts</td><td>Only monitors; it doesn’t build a response</td></tr>
+<tr><td>Deep RL + MTD (Zhou et al.)</td><td>Learns a defense policy</td><td>Must retrain for every new attack; fixed action list</td></tr>
+<tr><td>LLMs for security (CTI, CyberPal.AI, ACD agent)</td><td>Read and reason about threats</td><td>One task only, or needs a lot of expert help</td></tr>
+</table>
+<p class="callout rise" style="--i:2">Missing piece: one system that can sense, decide, act and learn — across many attack types.</p>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="idea" class="dark statement">
+<p class="eyebrow">THE KEY IDEA</p>
+<p class="big-quote rise" style="--i:1">Let a team of LLM agents run the whole defense loop — and learn from memory instead of retraining.</p>
+<div class="tags rise" style="--i:3">
+<p class="tag">End-to-end</p>
+<p class="tag">No retraining</p>
+<p class="tag">Self-evolving</p>
+</div>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="threat">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">THREAT MODEL</p>
+<h2>Who is the attacker?</h2>
+</div>
+<div class="cards">
+<div class="card rise" style="--i:1">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C41230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20z"/><path d="M12 10v5M12 18v.5"/></svg>
+<h3>The attacker can</h3>
+<ul class="list">
+<li>Launch SYN flooding, SlowHTTP and Memory DoS attacks</li>
+<li>Send bad traffic or fight for shared resources</li>
+<li>Change tactics over time</li>
+</ul>
+</div>
+<div class="card gray rise" style="--i:2">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#55565A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+<h3>The attacker cannot</h3>
+<ul class="list">
+<li>Get admin access to the cloud</li>
+<li>Touch or tamper with the defense system</li>
+</ul>
+</div>
+</div>
+<p class="callout rise" style="--i:3">Key assumption: the cloud’s monitoring and management tools can be trusted.</p>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="arch">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">ARCHITECTURE</p>
+<h2>LLM-PD: five agents in a closed loop</h2>
+</div>
+<div class="diagram">
+<svg aria-label="Feedback arrow from the last agent back to the first agent" style="position:absolute; left:0; top:0; width:1664px; height:400px" width="1664" height="400" viewBox="0 0 1664 400"><path d="M1516 288 V370 H148 V300" fill="none" stroke="#C41230" stroke-width="3" stroke-dasharray="12 8"/><polygon points="136,306 148,290 160,306" fill="#C41230"/></svg>
+<div class="node rise" style="left:0px; --i:1"><p class="node-id">(a)</p><p class="node-name">Collector</p><p class="node-role">Gathers data and cleans it up</p></div>
+<div class="node rise" style="left:342px; --i:2"><p class="node-id">(b)</p><p class="node-name">Analyzer</p><p class="node-role">Checks system status and scores the risk</p></div>
+<div class="node rise" style="left:684px; --i:3"><p class="node-id">(c)</p><p class="node-name">Decision-Maker</p><p class="node-role">Breaks the task down and picks actions</p></div>
+<div class="node rise" style="left:1026px; --i:4"><p class="node-id">(d)</p><p class="node-name">Deployer</p><p class="node-role">Runs a known fix or writes a new script</p></div>
+<div class="node rise" style="left:1368px; --i:5"><p class="node-id">(e)</p><p class="node-name">Feedback Giver</p><p class="node-role">Checks results and updates memory</p></div>
+<svg style="position:absolute;left:300px;top:152px" width="38" height="24" viewBox="0 0 38 24"><path d="M0 12H26" stroke="#C41230" stroke-width="3"/><polygon points="24,4 38,12 24,20" fill="#C41230"/></svg>
+<svg style="position:absolute;left:642px;top:152px" width="38" height="24" viewBox="0 0 38 24"><path d="M0 12H26" stroke="#C41230" stroke-width="3"/><polygon points="24,4 38,12 24,20" fill="#C41230"/></svg>
+<svg style="position:absolute;left:984px;top:152px" width="38" height="24" viewBox="0 0 38 24"><path d="M0 12H26" stroke="#C41230" stroke-width="3"/><polygon points="24,4 38,12 24,20" fill="#C41230"/></svg>
+<svg style="position:absolute;left:1326px;top:152px" width="38" height="24" viewBox="0 0 38 24"><path d="M0 12H26" stroke="#C41230" stroke-width="3"/><polygon points="24,4 38,12 24,20" fill="#C41230"/></svg>
+<p class="loop-label">Memory: what worked, what failed, and why</p>
+<p class="env-label">Each agent is a prompted LLM. One full pass through all five = one “round.”</p>
+</div>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="collect">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">STAGES (A) AND (B)</p>
+<h2>First collect the data, then score the risk</h2>
+</div>
+<div class="cols">
+<div class="col rise" style="--i:1">
+<p class="label">(A) COLLECTOR</p>
+<ul class="list">
+<li>Pulls traffic, logs, metrics, events and configs</li>
+<li>Parses, removes duplicates, merges repeats</li>
+<li>Outputs one clean JSON for the next agent</li>
+</ul>
+<p class="small">Example from the paper:</p>
+<p class="mini">2× failed_login, admin, 192.168.1.10<br>1× heartbeat, ok<br>→ 1 alert: repeated failed logins<br>→ heartbeat dropped as noise</p>
+</div>
+<div class="col rise" style="--i:2">
+<p class="label">(B) ANALYZER</p>
+<p class="body">Gives a risk score from three parts:</p>
+<div class="formula">
+<p class="pill">Scope 0–3</p><p class="op">+</p><p class="pill">Impact 0–4</p><p class="op">+</p><p class="pill">Duration 0–3</p>
+</div>
+<p class="body">→ scaled to a <b>0–10</b> risk score, used to rank what to fix first.</p>
+<ul class="list">
+<li>The LLM explains cause and effect, not just a label</li>
+<li>Flags strange patterns it has never seen before</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="decide">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">STAGES (C) AND (D)</p>
+<h2>Plan the defense, then put it in place</h2>
+</div>
+<div class="cols">
+<div class="col rise" style="--i:1">
+<p class="label">(C) DECISION-MAKER</p>
+<ul class="list">
+<li>Splits a big task into ordered subtasks, ranked by risk</li>
+<li>Checks every action: bad values or broken limits are rejected</li>
+<li>Exploration rate: mostly reuse what worked, sometimes try something new</li>
+<li>A solver balances goals like security, cost and speed</li>
+</ul>
+<div class="box"><p class="callout">Why all the checks? To stop LLM hallucinations from reaching the real system.</p></div>
+</div>
+<div class="col rise" style="--i:2; flex:1.2">
+<p class="label">(D) DEPLOYER</p>
+<ol class="list">
+<li>Look in the defense library first</li>
+<li>Not there? The LLM writes a new script</li>
+<li>Check it: syntax, static analysis, sandbox run</li>
+<li>Deploy it, then save it to the library</li>
+</ol>
+<p class="small">Example from the paper (simplified):</p>
+<p class="code">#!/bin/bash<br>IP="192.168.1.10"<br>iptables -A INPUT -s $IP -j DROP<br>echo "$(date): blocked $IP" &gt;&gt; /var/log/defense.log</p>
+</div>
+</div>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="feedback">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">STAGE (E)</p>
+<h2>Learn from every round, without retraining</h2>
+</div>
+<div class="cards">
+<div class="card rise" style="--i:1">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C41230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+<h3>1. Score the result</h3>
+<p class="body">Five views: security, recovery time, resources, money cost, and service quality (QoS). Weights depend on the situation.</p>
+</div>
+<div class="card rise" style="--i:2">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C41230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>
+<h3>2. Decide if it’s done</h3>
+<p class="body">After each action, check for success or failure. Tag the whole action sequence with the outcome.</p>
+</div>
+<div class="card rise" style="--i:3">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C41230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+<h3>3. Remember it</h3>
+<p class="body"><b>Short-term:</b> each step in this episode.<br><b>Long-term:</b> a sliding window of recent full episodes.</p>
+</div>
+</div>
+<p class="callout rise" style="--i:4">Memory goes back into the prompts: repeat what worked, avoid what failed — and keep the prompt short.</p>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="setup" class="stone">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">CASE STUDY</p>
+<h2>How they tested it</h2>
+</div>
+<div class="grid2">
+<div class="box rise" style="background:#FFFDFB; --i:1">
+<h3>3 LLMs</h3>
+<p class="body">GPT-4o mini<br>DeepSeek-R1-Distill-Qwen-32B<br>Qwen3-32B</p>
+</div>
+<div class="box rise" style="background:#FFFDFB; --i:2">
+<h3>3 DoS attacks</h3>
+<p class="body">SYN flooding and SlowHTTP (2 attacker IPs)<br>Memory DoS (attacker VMs on the same machine)</p>
+</div>
+<div class="box rise" style="background:#FFFDFB; --i:3">
+<h3>Simulated cloud</h3>
+<p class="body">Up to 10 service replicas, 100 pods, 256 connections per pod<br>5 racks × 10 machines × 10 VMs</p>
+</div>
+<div class="box rise" style="background:#FFFDFB; --i:4">
+<h3>Baselines and runs</h3>
+<p class="body">Deep RL: DQN, Actor-Critic, PPO<br>1 step = 30 s · 200 tests × 10 episodes</p>
+</div>
+</div>
+<p class="callout rise" style="--i:5">Note: everything runs in a simulation, not on a real cloud.</p>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="efficacy">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">RESULT 1 · DEFENSE EFFICACY</p>
+<h2>LLM-PD stops far more attacks than deep RL</h2>
+</div>
+<div class="bars">
+<div class="bar-card rise" style="--i:1">
+<p class="bar-attack">SYN Flooding</p>
+<p class="big-num">98.7%</p>
+<p class="big-gray">vs 82.7%</p>
+<div class="bar-row"><p class="bar-name">LLM-PD (best model)</p><div class="track"><div class="fill-red" style="width:98.66%; --i:1"></div></div></div>
+<div class="bar-row"><p class="bar-name">DQN (best baseline)</p><div class="track"><div class="fill-gray" style="width:82.68%; --i:1"></div></div></div>
+<p class="gap-pill">+16 points</p>
+</div>
+<div class="bar-card rise" style="--i:2">
+<p class="bar-attack">SlowHTTP</p>
+<p class="big-num">98.5%</p>
+<p class="big-gray">vs 84.9%</p>
+<div class="bar-row"><p class="bar-name">LLM-PD (best model)</p><div class="track"><div class="fill-red" style="width:98.47%; --i:2"></div></div></div>
+<div class="bar-row"><p class="bar-name">DQN (best baseline)</p><div class="track"><div class="fill-gray" style="width:84.94%; --i:2"></div></div></div>
+<p class="gap-pill">+14 points</p>
+</div>
+<div class="bar-card rise" style="--i:3">
+<p class="bar-attack">Memory DoS</p>
+<p class="big-num">98.9%</p>
+<p class="big-gray">vs 56.1%</p>
+<div class="bar-row"><p class="bar-name">LLM-PD (best model)</p><div class="track"><div class="fill-red" style="width:98.88%; --i:3"></div></div></div>
+<div class="bar-row"><p class="bar-name">DQN (best baseline)</p><div class="track"><div class="fill-gray" style="width:56.07%; --i:3"></div></div></div>
+<p class="gap-pill">+43 points</p>
+</div>
+</div>
+<p class="small">All three LLMs beat every baseline. Range across LLMs: SYN 97.1–98.7%, SlowHTTP 97.7–98.5%, Memory DoS 93.9–98.9%. Source: Table III.</p>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="tradeoff">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">RESULT 2 · THE PRICE</p>
+<h2>Better defense, but slower and more expensive</h2>
+</div>
+<div class="cols">
+<div class="col rise" style="--i:1; flex:1.35">
+<p class="label">SYN FLOODING SCENARIO</p>
+<table class="tbl">
+<tr><th style="width:46%">Method</th><th style="width:27%; text-align:right">Latency (s)</th><th style="width:27%; text-align:right">Cost ($)</th></tr>
+<tr><td>DQN</td><td style="text-align:right">0.06</td><td style="text-align:right">0.014</td></tr>
+<tr><td>Actor-Critic</td><td style="text-align:right">0.12</td><td style="text-align:right">0.027</td></tr>
+<tr><td>PPO</td><td style="text-align:right">0.54</td><td style="text-align:right">0.12</td></tr>
+<tr class="hl"><td>LLM-PD · GPT-4o mini</td><td style="text-align:right">2.73</td><td style="text-align:right">3.20</td></tr>
+<tr class="hl"><td>LLM-PD · DeepSeek-32B</td><td style="text-align:right">7.17</td><td style="text-align:right">0.042</td></tr>
+<tr class="hl"><td>LLM-PD · Qwen3-32B</td><td style="text-align:right">12.41</td><td style="text-align:right">0.049</td></tr>
+</table>
+<p class="small">Latency = time to carry out one defense action. Cost = money spent per episode.</p>
+</div>
+<div class="col rise" style="--i:2">
+<div class="box"><p class="big-num">~200×</p><p class="body">slower than DQN in the worst case (12.4 s vs 0.06 s)</p></div>
+<div class="box"><p class="body"><b>API model:</b> fastest LLM, but the most expensive.<br><b>Open models:</b> cheap, but slower.</p></div>
+<p class="callout">Authors’ view: for critical systems, the extra time and cost are worth it.</p>
+</div>
+</div>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="learning">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">RESULT 3 · SELF-EVOLUTION</p>
+<h2>It gets faster as it gains experience</h2>
+</div>
+<div class="cols">
+<div class="col rise" style="--i:1; flex:1.2">
+<p class="label">STEPS NEEDED TO DEFEND SUCCESSFULLY</p>
+<table class="tbl">
+<tr><th style="width:40%">Attack</th><th style="width:30%; text-align:right">Episode 1</th><th style="width:30%; text-align:right">Episode 10</th></tr>
+<tr><td>SYN Flooding</td><td style="text-align:right">10.05</td><td style="text-align:right">5.64</td></tr>
+<tr><td>SlowHTTP</td><td style="text-align:right">9.69</td><td style="text-align:right">5.26</td></tr>
+<tr><td>Memory DoS</td><td style="text-align:right">16.02</td><td style="text-align:right">6.40</td></tr>
+</table>
+<p class="note">Careful: the paper quotes episode 1 for GPT-4o mini and episode 10 for DeepSeek-R1-32B. The full figure shows the same downward trend for all three models.</p>
+</div>
+<div class="col rise" style="--i:2">
+<p class="label">EACH LLM HAS ITS OWN STRENGTH</p>
+<div class="box"><p class="body"><b>GPT-4o mini:</b> best at early stages — data collection 99%, risk scoring 89%</p></div>
+<div class="box"><p class="body"><b>DeepSeek / Qwen3:</b> best at decisions — 99% / 98%</p></div>
+<div class="box"><p class="body"><b>Qwen3:</b> best at deployment — 87%</p></div>
+<p class="callout">Idea: use a different LLM for each stage.</p>
+</div>
+</div>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="critique">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">DISCUSSION</p>
+<h2>What I liked, and what I would question</h2>
+</div>
+<div class="cards">
+<div class="card rise" style="--i:1">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C41230" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v11H3V10zM7 10l4-8a3 3 0 0 1 3 3v4h6a2 2 0 0 1 2 2l-2 8a2 2 0 0 1-2 2H7"/></svg>
+<h3>Strengths</h3>
+<ul class="list">
+<li>Covers the full loop, not just one task</li>
+<li>Works with any LLM; you can swap models per stage</li>
+<li>Learns from memory, no retraining</li>
+<li>Safety checks on every action and script</li>
+<li>Code is open source</li>
+</ul>
+</div>
+<div class="card gray rise" style="--i:2; flex:1.25">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#55565A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+<h3>Open questions</h3>
+<ul class="list">
+<li>Only simulated attacks: no real cloud or real traffic</li>
+<li>Seconds of delay vs. floods that hit in milliseconds</li>
+<li>Logs go straight into prompts: risk of prompt injection?</li>
+<li>Auto-running LLM-written scripts: is a sandbox enough?</li>
+<li>No ablation of memory; only deep RL baselines</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="takeaways" class="stone">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">TAKEAWAYS</p>
+<h2>Three things to remember</h2>
+</div>
+<div class="take rise" style="--i:1"><p class="num">1</p><p class="take-text">LLM agents can cover the full defense loop: sense, assess, decide, act, and learn.</p></div>
+<div class="take rise" style="--i:2"><p class="num">2</p><p class="take-text">Memory feedback lets the system improve without retraining — and it beat deep RL on all three DoS attacks.</p></div>
+<div class="take rise" style="--i:3"><p class="num">3</p><p class="take-text">The open problems are speed, the safety of AI-written actions, and testing in the real world.</p></div>
+<div class="row rise" style="--i:4; gap:40px">
+<p class="thanks">Thank you! Questions?</p>
+<p class="body">Ruilin Gao · ruiling@andrew.cmu.edu</p>
+</div>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="backup-table3">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">BACKUP · TABLE III</p>
+<h2>Full comparison with the baselines</h2>
+</div>
+<div>
+<div style="display:flex">
+<p class="label" style="width:19%"></p>
+<p class="label" style="width:27%; border-bottom:3px solid #C41230; padding-bottom:6px">SYN FLOODING</p>
+<p class="label" style="width:27%; border-bottom:3px solid #C41230; padding-bottom:6px; padding-left:12px">SLOWHTTP</p>
+<p class="label" style="width:27%; border-bottom:3px solid #C41230; padding-bottom:6px; padding-left:12px">MEMORY DOS</p>
+</div>
+<table class="tbl-sm">
+<tr><th style="width:19%">Method</th><th style="width:9%; text-align:right">Eff. %</th><th style="width:9%; text-align:right">Lat. s</th><th style="width:9%; text-align:right">Cost $</th><th style="width:9%; text-align:right">Eff. %</th><th style="width:9%; text-align:right">Lat. s</th><th style="width:9%; text-align:right">Cost $</th><th style="width:9%; text-align:right">Eff. %</th><th style="width:9%; text-align:right">Lat. s</th><th style="width:9%; text-align:right">Cost $</th></tr>
+<tr><td>DQN</td><td style="text-align:right">82.68</td><td style="text-align:right">0.0595</td><td style="text-align:right">0.0135</td><td style="text-align:right">84.94</td><td style="text-align:right">0.0601</td><td style="text-align:right">0.0136</td><td style="text-align:right">56.07</td><td style="text-align:right">0.2117</td><td style="text-align:right">0.0479</td></tr>
+<tr><td>AC</td><td style="text-align:right">73.65</td><td style="text-align:right">0.1189</td><td style="text-align:right">0.0269</td><td style="text-align:right">77.35</td><td style="text-align:right">0.1134</td><td style="text-align:right">0.0256</td><td style="text-align:right">54.90</td><td style="text-align:right">0.6142</td><td style="text-align:right">0.1389</td></tr>
+<tr><td>PPO</td><td style="text-align:right">73.00</td><td style="text-align:right">0.5429</td><td style="text-align:right">0.1228</td><td style="text-align:right">78.79</td><td style="text-align:right">0.4740</td><td style="text-align:right">0.1072</td><td style="text-align:right">55.56</td><td style="text-align:right">1.1341</td><td style="text-align:right">0.2565</td></tr>
+<tr class="hl"><td>LLM-PD · GPT-4o mini</td><td style="text-align:right">97.08</td><td style="text-align:right">2.7255</td><td style="text-align:right">3.2045</td><td style="text-align:right">98.47</td><td style="text-align:right">2.6646</td><td style="text-align:right">3.3227</td><td style="text-align:right">98.78</td><td style="text-align:right">2.5523</td><td style="text-align:right">2.3432</td></tr>
+<tr class="hl"><td>LLM-PD · DeepSeek</td><td style="text-align:right">98.15</td><td style="text-align:right">7.1682</td><td style="text-align:right">0.0418</td><td style="text-align:right">98.02</td><td style="text-align:right">7.3874</td><td style="text-align:right">0.0322</td><td style="text-align:right">98.88</td><td style="text-align:right">7.3286</td><td style="text-align:right">0.0301</td></tr>
+<tr class="hl"><td>LLM-PD · Qwen3</td><td style="text-align:right">98.66</td><td style="text-align:right">12.411</td><td style="text-align:right">0.0492</td><td style="text-align:right">97.69</td><td style="text-align:right">13.136</td><td style="text-align:right">0.0258</td><td style="text-align:right">93.87</td><td style="text-align:right">16.394</td><td style="text-align:right">0.0809</td></tr>
+</table>
+</div>
+<p class="small">Eff. = defense efficacy (success rate). Lat. = time per defense action. Cost = money per episode. DeepSeek = DeepSeek-R1-Distill-Qwen-32B; Qwen3 = Qwen3-32B.</p>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+<section id="backup-table2">
+<div class="topbar"></div>
+<div class="head">
+<p class="eyebrow">BACKUP · TABLE II</p>
+<h2>Surviving rate by model and attack</h2>
+</div>
+<table class="tbl">
+<tr><th style="width:28%">DoS attack</th><th style="width:24%; text-align:right">GPT-4o mini</th><th style="width:24%; text-align:right">DeepSeek-R1-32B</th><th style="width:24%; text-align:right">Qwen3-32B</th></tr>
+<tr><td>SYN Flooding</td><td style="text-align:right">0.888 ± 0.092</td><td style="text-align:right">0.961 ± 0.057</td><td style="text-align:right">0.977 ± 0.026</td></tr>
+<tr><td>SlowHTTP</td><td style="text-align:right">0.918 ± 0.080</td><td style="text-align:right">0.985 ± 0.035</td><td style="text-align:right">0.982 ± 0.020</td></tr>
+<tr><td>Memory DoS</td><td style="text-align:right">0.936 ± 0.061</td><td style="text-align:right">0.931 ± 0.104</td><td style="text-align:right">0.936 ± 0.086</td></tr>
+</table>
+<p class="body">Surviving rate = share of time steps where the service stays up after a defense action. Mean ± 95% confidence interval.</p>
+<p class="callout">The reasoning models are steadier on SYN and SlowHTTP; all three tie on Memory DoS.</p>
+<div class="foot"><p class="foot-l">Ruilin Gao · LLM-PD (arXiv:2412.21051)</p></div>
+
+</section>
+</div></div>
+<div id="hint">← → to move · F for full screen</div>
+<div id="bar">
+<button id="prev" aria-label="Previous slide">← Prev</button>
+<span id="count"></span>
+<button id="next" aria-label="Next slide">Next →</button>
+<button id="fs" aria-label="Full screen">Full screen</button>
+<a href="script.html">Script</a>
+</div>
+<script>
+const slides = [...document.querySelectorAll('#deck > section')];
+const deck = document.getElementById('deck');
+let i = 0;
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  deck.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+}
+function show(n) {
+  i = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach((el, k) => el.classList.toggle('on', k === i));
+  document.body.style.setProperty('--start', i);
+  document.getElementById('count').textContent = (i + 1) + ' / ' + slides.length;
+  history.replaceState(null, '', '#' + (i + 1));
+}
+addEventListener('resize', fit);
+addEventListener('keydown', e => {
+  if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); show(i + 1); }
+  if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+  if (e.key === 'Home') show(0);
+  if (e.key === 'End') show(slides.length - 1);
+  if (e.key === 'f' || e.key === 'F') toggleFs();
+});
+function toggleFs() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+}
+document.getElementById('prev').onclick = () => show(i - 1);
+document.getElementById('next').onclick = () => show(i + 1);
+document.getElementById('fs').onclick = toggleFs;
+document.getElementById('stage').addEventListener('click', e => show(e.clientX < innerWidth / 3 ? i - 1 : i + 1));
+let tx = null;
+addEventListener('touchstart', e => { tx = e.touches[0].clientX; document.body.classList.add('touch'); }, { passive: true });
+addEventListener('touchend', e => {
+  if (tx === null) return;
+  const dx = e.changedTouches[0].clientX - tx;
+  if (Math.abs(dx) > 40) show(dx < 0 ? i + 1 : i - 1);
+  tx = null;
+});
+setTimeout(() => document.getElementById('hint').style.opacity = 0, 4000);
+fit();
+show((parseInt(location.hash.slice(1)) || 1) - 1);
+</script>
+</body></html>
